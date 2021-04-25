@@ -1,4 +1,4 @@
-{ stdenv ? (import <nixpkgs> {}).stdenv }:
+{ stdenv, fetchFromGitHub }:
 let
   lua = stdenv.mkDerivation {
       pname = "lua";
@@ -18,16 +18,28 @@ let
                   ];
     };
 
-  inspect_lua = builtins.fetchurl {
-    url = "https://raw.githubusercontent.com/kikito/inspect.lua/master/inspect.lua";
+  inspect_lua = fetchFromGitHub {
+    repo = "inspect.lua";
+    owner = "kikito";
     name = "inspect.lua";
-    sha256 = "1xk42w7vwnc6k5iiqbzlnnapas4fk879mkj36nws2p2w03nj5508";
+    rev = "b611db6bfa9c12ce35dd4972032fbbd2ad5ba965";
+    sha256 = "04w6r7f4rnl6s3z76qz7qslp2lr0yy8b7gvdcclnhvpy8dz0jqhr";
   };
-  json_lua = builtins.fetchurl {
-    url = "https://raw.githubusercontent.com/rxi/json.lua/master/json.lua";
+
+  json_lua = fetchFromGitHub {
+    owner = "rxi";
+    repo = "json.lua";
     name = "json.lua";
-    sha256 = "0zibpz07spqjwgj05zp0nm11m0l9ymfg89fy6q3k7h5bgyjwvb0f";
+    rev = "dbf4b2dd2eb7c23be2773c89eb059dadd6436f94";
+    sha256 = "16yzbyp296abirl77xk3fw5jqgcjf3frmwxph22sfxam8npkxcq6";
   };
+
+  fennel = fetchTarball {
+    name = "fennel-0.9.1";
+    url = "https://fennel-lang.org/downloads/fennel-0.9.1.tar.gz";
+    sha256 = "0m2al5j0nf8nydrs6yiif3zfwrfa68r97scj6kw4ysv2h4z6al5r";
+  };
+
 in stdenv.mkDerivation {
   name = "upd";
   src = ./.;
@@ -35,10 +47,9 @@ in stdenv.mkDerivation {
   LDFLAGS = "-L${lua}/lib";
   depsBuildHost = [lua];
   LUA = "${lua}/bin/lua";
-  postPatch = ''
-    test -L ./lib/inspect.lua || ln -s ${inspect_lua} ./lib/inspect.lua
-    test -L ./lib/json.lua || ln -s ${json_lua} ./lib/json.lua
-  '';
-
+  LUA_PATH = "${inspect_lua}/?.lua;${json_lua}/?.lua;${fennel}/?.lua";
+  FENNEL_LUA = "${fennel}/fennel.lua";
+  doCheck = true;
+  checkPhase = "make test";
   installFlags = ["DESTDIR=$(out)"];
 }
