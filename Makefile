@@ -1,6 +1,7 @@
 default: src/upscript
 
 LOADLIBES=-llua -lm
+CFLAGS+=-Wall
 
 TESTS=$(wildcard tests/*-test.fnl)
 test: $(TESTS:%.fnl=%.run)

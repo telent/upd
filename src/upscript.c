@@ -62,7 +62,6 @@ static int l_isdir (lua_State *L) {
 
 static int l_mkdir (lua_State *L) {
   const char *path = luaL_checkstring(L, 1);
-  struct stat s;
   int ret = mkdir(path, S_IRWXU | S_IRWXG |S_IRWXO); /* subject to umask */
   return l_return_or_error(L, ret);
 }
@@ -345,8 +344,7 @@ static int l_handle_error(lua_State* L) {
 int
 main(int argc, char *argv[])
 {
-    int status, result, i;
-    double sum;
+    int status, result;
     lua_State *L;
 
     /*
