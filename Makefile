@@ -1,5 +1,7 @@
 default: src/upscript
 
+src/upscript: src/upscript.c src/netlink.c src/netlink.h
+
 LOADLIBES=-llua -lm
 CFLAGS+=-Wall
 

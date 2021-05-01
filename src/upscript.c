@@ -15,6 +15,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <dirent.h>
+#include "netlink.h"
 
 #define ERRC(c) lua_pushinteger(L, c);  lua_pushstring(L, #c);  lua_rawset(L, -3)
 static void l_errno_table(lua_State *L) {
@@ -156,6 +157,46 @@ static int l_push_siginfo(lua_State *L, struct signalfd_siginfo *si) {
 static int l_sleep(lua_State *L) {
   sleep(lua_tonumber(L, -1));
   return 0;
+}
+
+static int l_netlink_listener(lua_State *L) {
+  int value;
+  if(lua_gettop(L) > 0) {
+    const char *path = luaL_checkstring(L, 1);
+    printf("called with path %s\n", path);
+    value = open(path, O_RDONLY);
+  } else {
+    printf("called without path\n");
+    value = netlink_open_socket();
+  }
+  return l_return_or_error(L, value);
+}
+
+static int l_netlink_read_message(lua_State *L) {
+  int fd = lua_tointeger(L, 1);
+  struct netlink_message msg;
+  if(netlink_read_message(fd, &msg)) {
+    lua_newtable(L);
+
+    if(msg.data.ifname) {
+      lua_pushstring(L, "interface");
+      lua_pushstring(L, msg.data.ifname);
+      lua_settable(L, -3);
+    }
+    if(msg.message == LINK_UP) {
+      lua_pushstring(L, "link-status");
+      lua_pushstring(L, "up");
+      lua_settable(L, -3);
+    }
+    if(msg.message == LINK_DOWN) {
+      lua_pushstring(L, "link-status");
+      lua_pushstring(L, "down");
+      lua_settable(L, -3);
+    }
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 static int l_waitpid(lua_State *L) {
@@ -345,6 +386,8 @@ struct export {
 } exports[] = {
   {"dir", l_dir},
   {"execve", l_execve},
+  {"netlink-listener", l_netlink_listener},
+  {"netlink-read-message", l_netlink_read_message},
   {"fork", l_fork},
   {"inotify_add_watch", l_inotify_add_watch},
   {"inotify_init", l_inotify_init},
