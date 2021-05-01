@@ -48,7 +48,7 @@ in stdenv.mkDerivation {
   depsBuildHost = [lua];
   LUA = "${lua}/bin/lua";
   LUA_PATH = "${inspect_lua}/?.lua;${json_lua}/?.lua;${fennel}/?.lua";
-  FENNEL_LUA = "${fennel}/fennel.lua";
+  FENNEL_LUA = "${fennel}/fennel";
   doCheck = true;
   checkPhase = "make test";
   installFlags = ["DESTDIR=$(out)"];
