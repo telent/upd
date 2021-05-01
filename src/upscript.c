@@ -339,7 +339,24 @@ static int l_handle_error(lua_State* L) {
   return 1; // Traceback is returned.
 }
 
+struct export {
+  char *name;
+  void *fn;
+} exports[] = {
+  {"dir", l_dir},
+  {"execve", l_execve},
+  {"fork", l_fork},
+  {"inotify_add_watch", l_inotify_add_watch},
+  {"inotify_init", l_inotify_init},
+  {"isdir", l_isdir},
+  {"mkdir", l_mkdir},
+  {"next_event", l_next_event},
+  {"pfork", l_pfork},
+  {"sigchld_fd", l_sigchld_fd},
+  {"sleep", l_sleep},
+  {"waitpid", l_waitpid},
 
+};
 
 int
 main(int argc, char *argv[])
@@ -375,20 +392,15 @@ main(int argc, char *argv[])
     }
     lua_setglobal(L, "arg");
 
-    lua_register(L, "dir", l_dir);
-    lua_register(L, "execve", l_execve);
-    lua_register(L, "fork", l_fork);
-    lua_register(L, "inotify_add_watch", l_inotify_add_watch);
-    lua_register(L, "inotify_init", l_inotify_init);
-    lua_register(L, "isdir", l_isdir);
-    lua_register(L, "mkdir", l_mkdir);
-    lua_register(L, "next_event", l_next_event);
-    lua_register(L, "pfork", l_pfork);
-    lua_register(L, "sigchld_fd", l_sigchld_fd);
-    lua_register(L, "sleep", l_sleep);
-    lua_register(L, "waitpid", l_waitpid);
+    lua_newtable(L);
+    for(int i=0; i < (sizeof exports)/(sizeof exports[0]); i++) {
+      struct export e = exports[i];
+      lua_pushstring(L, e.name);
+      lua_pushcfunction(L, e.fn);
+      lua_settable(L, -3);
+    }
+    lua_setglobal(L, "upd");
 
-    /* Ask Lua to run our little script */
     result = lua_pcall(L, 0, LUA_MULTRET, -2);
     if (result) {
         fprintf(stderr, "Failed to run script: %s\n", lua_tostring(L, -1));
