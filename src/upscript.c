@@ -246,6 +246,11 @@ static int l_fork(lua_State *L) {
   return l_return_or_error(L, child);
 }
 
+static int l_fileno(lua_State *L) {
+  FILE **file = (FILE **) luaL_checkudata(L, 1, "FILE*");
+  lua_pushinteger(L, fileno(*file));
+  return 1;
+}
 
 static int l_pfork(lua_State *L) {
   int pipeout[2], pipeerr[2];
@@ -386,6 +391,7 @@ struct export {
 } exports[] = {
   {"dir", l_dir},
   {"execve", l_execve},
+  {"fileno", l_fileno},
   {"fork", l_fork},
   {"inotify_add_watch", l_inotify_add_watch},
   {"inotify_init", l_inotify_init},
