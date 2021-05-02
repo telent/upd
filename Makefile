@@ -11,3 +11,6 @@ test: $(TESTS:%.fnl=%.run)
 tests/%-test.run: tests/%-test.fnl
 	@# echo LUA_PATH="$(LUA_PATH)"
 	./src/upscript $(FENNEL_LUA)  --add-fennel-path ./scripts/?.fnl $<
+
+clean:
+	-rm tests/netlink-capture src/upscript
