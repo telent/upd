@@ -103,20 +103,15 @@ static int l_execve(lua_State *L) {
     return 1;
 }
 
-static int l_fork(lua_State *L) {
-    pid_t child = fork();
-    return return_or_error(L, child);
-}
-
 static int l_fileno(lua_State *L) {
     FILE **file = (FILE **) luaL_checkudata(L, 1, "FILE*");
     lua_pushinteger(L, fileno(*file));
     return 1;
 }
 
-static int l_inotify_init(lua_State *L) {
-    int fd = inotify_init1(IN_NONBLOCK|IN_CLOEXEC);
-    return return_or_error(L, fd);
+static int l_fork(lua_State *L) {
+    pid_t child = fork();
+    return return_or_error(L, child);
 }
 
 static int l_inotify_add_watch(lua_State *L) {
@@ -132,6 +127,10 @@ static int l_inotify_add_watch(lua_State *L) {
     return return_or_error(L, watch_d);
 }
 
+static int l_inotify_init(lua_State *L) {
+    int fd = inotify_init1(IN_NONBLOCK|IN_CLOEXEC);
+    return return_or_error(L, fd);
+}
 
 static int l_isdir (lua_State *L) {
     const char *path = luaL_checkstring(L, 1);
