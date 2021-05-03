@@ -34,15 +34,6 @@ static void l_errno_table(lua_State *L) {
 }
 #undef ERRC
 
-
-
-
-
-
-
-
-
-
 static int l_handle_error(lua_State* L) {
     const char * msg = lua_tostring(L, -1);
     luaL_traceback(L, L, msg, 2);
@@ -50,9 +41,7 @@ static int l_handle_error(lua_State* L) {
     return 1; // Traceback is returned.
 }
 
-
-int
-main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
     int status, result;
     lua_State *L;
 
