@@ -23,9 +23,8 @@
 #include "netlink.h"
 #include "exports.h"
 
-/* helpers */
 
-static int l_return_or_error(lua_State *L, int value) {
+static int return_or_error(lua_State *L, int value) {
     if(value >= 0) {
         lua_pushinteger(L, value);
         return 1;
@@ -34,15 +33,6 @@ static int l_return_or_error(lua_State *L, int value) {
         lua_pushinteger(L, errno);
         return 2;
     }
-}
-
-static int countentries(lua_State *L, int index) {
-    int i;
-    lua_pushnil(L);
-    for(i=0; lua_next(L, index); i++) {
-        lua_pop(L, 1);
-    }
-    return i;
 }
 
 static int lua_objlen(lua_State *L, int index) {
@@ -115,7 +105,7 @@ static int l_execve(lua_State *L) {
 
 static int l_fork(lua_State *L) {
     pid_t child = fork();
-    return l_return_or_error(L, child);
+    return return_or_error(L, child);
 }
 
 static int l_fileno(lua_State *L) {
@@ -126,7 +116,7 @@ static int l_fileno(lua_State *L) {
 
 static int l_inotify_init(lua_State *L) {
     int fd = inotify_init1(IN_NONBLOCK|IN_CLOEXEC);
-    return l_return_or_error(L, fd);
+    return return_or_error(L, fd);
 }
 
 static int l_inotify_add_watch(lua_State *L) {
@@ -139,7 +129,7 @@ static int l_inotify_add_watch(lua_State *L) {
                                 IN_DELETE |
                                 IN_DELETE_SELF |
                                 IN_MOVED_TO);
-    return l_return_or_error(L, watch_d);
+    return return_or_error(L, watch_d);
 }
 
 
@@ -160,7 +150,7 @@ static int l_isdir (lua_State *L) {
 static int l_mkdir (lua_State *L) {
     const char *path = luaL_checkstring(L, 1);
     int ret = mkdir(path, S_IRWXU | S_IRWXG |S_IRWXO); /* subject to umask */
-    return l_return_or_error(L, ret);
+    return return_or_error(L, ret);
 }
 
 static int l_netlink_listener(lua_State *L) {
@@ -173,7 +163,7 @@ static int l_netlink_listener(lua_State *L) {
         printf("called without path\n");
         value = netlink_open_socket();
     }
-    return l_return_or_error(L, value);
+    return return_or_error(L, value);
 }
 
 static int l_netlink_read_message(lua_State *L) {
@@ -234,6 +224,15 @@ static int push_siginfo(lua_State *L, struct signalfd_siginfo *si) {
 }
 
 
+static int count_table_entries(lua_State *L, int index) {
+    int i;
+    lua_pushnil(L);
+    for(i=0; lua_next(L, index); i++) {
+        lua_pop(L, 1);
+    }
+    return i;
+}
+
 static int l_next_event(lua_State *L) {
     struct signalfd_siginfo si;
 
@@ -241,7 +240,7 @@ static int l_next_event(lua_State *L) {
      * pipe fds */
     int sigchld_fd = lua_tonumber(L, 1);
     int inotify_fd = lua_tonumber(L, 2);
-    int nfds = countentries(L, 3);
+    int nfds = count_table_entries(L, 3);
     int timeout_msec = lua_tonumber(L, 4);
 
     /* stack-allocating the pollfd set seems reasonable in the
@@ -350,7 +349,7 @@ static int l_pfork(lua_State *L) {
         lua_pushinteger(L, pipeout[0]);
         lua_pushinteger(L, pipeerr[0]);
         return 4;
-    } else return l_return_or_error(L, pid);
+    } else return return_or_error(L, pid);
 }
 
 
@@ -360,7 +359,7 @@ static int l_sigchld_fd(lua_State *L) {
     sigaddset(&mask, SIGCHLD);
     sigprocmask(SIG_BLOCK, &mask, NULL);
     int fd = signalfd(-1, &mask, SFD_NONBLOCK|SFD_CLOEXEC);
-    return l_return_or_error(L, fd);
+    return return_or_error(L, fd);
 }
 
 static int l_sleep(lua_State *L) {
@@ -370,7 +369,7 @@ static int l_sleep(lua_State *L) {
 
 static int l_waitpid(lua_State *L) {
     int pid = lua_tointeger(L, 1);
-    return l_return_or_error(L, waitpid(pid, NULL, 0));
+    return return_or_error(L, waitpid(pid, NULL, 0));
 }
 
 struct export exports[] = {
