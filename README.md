@@ -91,4 +91,4 @@ To invoke the pppoe service, do
 
 To run its tests, do
 
-    src/upscript fennel.lua  --add-fennel-path ./?.fnl tests/pppoe-test.fnl
+    make test
