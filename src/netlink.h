@@ -2,10 +2,10 @@
 #include <stdio.h>
 
 struct netlink_message {
-  enum { NOP, LINK_UP, LINK_DOWN } message;
-  union {
-    char ifname[IF_NAMESIZE];
-  } data;
+    enum { NOP, LINK_UP, LINK_DOWN } message;
+    union {
+        char ifname[IF_NAMESIZE];
+    } data;
 };
 
 inline void robustly(int value) {

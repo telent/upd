@@ -1,6 +1,11 @@
 default: src/upscript
 
-src/upscript: src/upscript.c src/netlink.c src/netlink.h
+SOURCES=src/upscript.c src/netlink.c src/netlink.h
+
+src/upscript: $(SOURCES)
+
+indent:
+	astyle --style=attach $(SOURCES)
 
 LOADLIBES=-llua -lm
 CFLAGS+=-Wall
