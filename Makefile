@@ -10,12 +10,15 @@ indent:
 LOADLIBES=-llua -lm
 CFLAGS+=-Wall
 
-TESTS=$(wildcard tests/*-test.fnl)
-test: $(TESTS:%.fnl=%.run)
+TESTS=$(wildcard tests/*-test.fnl) $(wildcard tests/*-test.sh)
+test: $(TESTS:%.fnl=%.run) $(TESTS:%.sh=%.run)
 
 tests/%-test.run: tests/%-test.fnl
 	@# echo LUA_PATH="$(LUA_PATH)"
 	./src/upscript $(FENNEL_LUA)  --add-fennel-path ./scripts/?.fnl $<
+
+tests/%-test.run: tests/%-test.rb
+	ruby $<
 
 clean:
 	-rm tests/netlink-capture src/upscript src/*.o

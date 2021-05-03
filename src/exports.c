@@ -232,6 +232,38 @@ static int count_table_entries(lua_State *L, int index) {
     return i;
 }
 
+static int l_poll_fds(lua_State *L) {
+    int nfds = count_table_entries(L, 1);
+    int timeout_msec;
+    if(lua_isnil(L, 2))
+	timeout_msec = -1;
+    else
+	timeout_msec = lua_tonumber(L, 2);
+
+    /* stack-allocating the pollfd set seems reasonable in the
+     * usual case (maybe two or three child pipe fds to watch)
+     * but we do have an opportunity to blow the stack here if a
+     * watcher starts eleventy billion children.
+     */
+    struct pollfd *pollfd = alloca(sizeof (struct pollfd) * (nfds));
+
+    lua_pushnil(L);
+    for(int i=0; lua_next(L, 1); i++) {
+        pollfd[i].fd = lua_tointeger(L, -1);
+        pollfd[i].events = POLLIN|POLLPRI;
+        lua_pop(L, 1);
+    }
+    poll(pollfd, nfds, timeout_msec);
+
+    for(int i = 0; i < nfds; i++) {
+	if(pollfd[i].revents) {
+	    lua_pushinteger(L, pollfd[i].fd);
+	    return 1;
+	}
+    }
+    return 0;			/* no return for timeout */
+}
+
 static int l_next_event(lua_State *L) {
     struct signalfd_siginfo si;
 
@@ -351,6 +383,17 @@ static int l_pfork(lua_State *L) {
     } else return return_or_error(L, pid);
 }
 
+static int l_read_fd(lua_State *L) {
+    int fd = luaL_checkinteger(L, 1);
+    char buf[1024];
+    size_t len = read(fd, buf, 1024);
+    if(len >= 0){
+	lua_pushlstring(L, buf, len);
+	return 1;
+    } else {
+	return return_or_error(L, 0);
+    }
+}
 
 static int l_sigchld_fd(lua_State *L) {
     sigset_t mask;
@@ -384,6 +427,8 @@ struct export exports[] = {
     {"netlink-read-message", l_netlink_read_message},
     {"next_event", l_next_event},
     {"pfork", l_pfork},
+    {"poll-fds", l_poll_fds},
+    {"read-fd", l_read_fd},
     {"sigchld_fd", l_sigchld_fd},
     {"sleep", l_sleep},
     {"waitpid", l_waitpid},
