@@ -359,17 +359,16 @@ static int l_pfork(lua_State *L) {
     int pipeout[2], pipeerr[2];
     L_CHECK_ERROR(L, pipe(pipeout));
     L_CHECK_ERROR(L, pipe(pipeerr));
-    int pid=fork();
-    if(pid==0) {
-        fclose(stdout);
-        fclose(stderr);
+    fflush(stdout);
+    fflush(stderr);
+    int pid = fork();
+    if(pid == 0) {
+        close(2);
+	close(1);
         close(pipeout[0]);
         close(pipeerr[0]);
-        close(1);
-        close(2);
         dup2(pipeout[1], 1);
         dup2(pipeerr[1], 2);
-
         lua_pushinteger(L, pid);
         return 1;
     } else if(pid > 0) {
