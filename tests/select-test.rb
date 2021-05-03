@@ -28,11 +28,19 @@ outs[0].puts "able"
 outs[2].puts "charlie"
 outs[3].puts "dibbler"
 sleep(0.1)
-outs[3].puts "chew backer"
+outs[3].puts "chew\0backer"
 outs[2].puts "able bodied"
 sleep(0.01)
 outs[1].puts "charlie says"
 outs[0].puts "dibbler pew"
+sleep(4)
+# the process under test should have exited by now, but if it
+# hasn't, send it some more data
+Process.wait(child, Process::WNOHANG) or outs[0].puts "tardy"
 outs.map(&:close)
 
-Process.wait(child)
+begin
+  Process.wait()
+rescue Errno::ECHILD
+  nil
+end

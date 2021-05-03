@@ -10,8 +10,8 @@ indent:
 LOADLIBES=-llua -lm
 CFLAGS+=-Wall
 
-TESTS=$(wildcard tests/*-test.fnl) $(wildcard tests/*-test.sh)
-test: $(TESTS:%.fnl=%.run) $(TESTS:%.sh=%.run)
+TESTS=$(wildcard tests/*-test.fnl) $(wildcard tests/*-test.rb)
+test: $(TESTS:%.fnl=%.run) $(TESTS:%.rb=%.run)
 
 tests/%-test.run: tests/%-test.fnl
 	@# echo LUA_PATH="$(LUA_PATH)"
