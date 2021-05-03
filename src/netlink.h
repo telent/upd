@@ -14,3 +14,4 @@ inline void robustly(int value) {
 }
 
 int netlink_open_socket(void);
+int netlink_read_message(int fd, struct netlink_message *msg);

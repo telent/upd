@@ -1,6 +1,6 @@
 default: src/upscript
 
-SOURCES=src/upscript.c src/netlink.c src/netlink.h
+SOURCES=src/upscript.c src/netlink.c src/netlink.h src/exports.c src/exports.h
 
 src/upscript: $(SOURCES)
 
@@ -18,4 +18,4 @@ tests/%-test.run: tests/%-test.fnl
 	./src/upscript $(FENNEL_LUA)  --add-fennel-path ./scripts/?.fnl $<
 
 clean:
-	-rm tests/netlink-capture src/upscript
+	-rm tests/netlink-capture src/upscript src/*.o
