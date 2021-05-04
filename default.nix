@@ -1,4 +1,4 @@
-{ stdenv, fetchFromGitHub }:
+{ stdenv, ruby, fetchFromGitHub, coreutils }:
 let
   lua = stdenv.mkDerivation {
       pname = "lua";
@@ -37,7 +37,8 @@ let
   fennel = fetchTarball {
     name = "fennel-0.9.1";
     url = "https://fennel-lang.org/downloads/fennel-0.9.1.tar.gz";
-    sha256 = "0m2al5j0nf8nydrs6yiif3zfwrfa68r97scj6kw4ysv2h4z6al5r";
+    sha256 = "0wq7wl1qg53rfb6ksg9asps98mb5wn2jbrdzyr0fa3gbxjwvpds4";
+    # sha256 = "0m2al5j0nf8nydrs6yiif3zfwrfa68r97scj6kw4ysv2h4z6al5r";
   };
 
 in stdenv.mkDerivation {
@@ -45,10 +46,12 @@ in stdenv.mkDerivation {
   src = ./.;
   CFLAGS = "-I${lua}/include";
   LDFLAGS = "-L${lua}/lib";
-  depsBuildHost = [lua];
+  depsBuildHost = [lua coreutils];
+  depsBuildBuild = [ruby];
   LUA = "${lua}/bin/lua";
   LUA_PATH = "${inspect_lua}/?.lua;${json_lua}/?.lua;${fennel}/?.lua";
   FENNEL_LUA = "${fennel}/fennel";
+  ENV = "${coreutils}/bin/env";
   doCheck = true;
   checkPhase = "make test";
   installFlags = ["DESTDIR=$(out)"];
